@@ -44,6 +44,30 @@ docker inspect -f '{{ index .Config.Labels "build_version" }}' lscr.io/linuxserv
 docker image prune
 
 
+
+- Remove container(s):
+docker compose down
+
+
+docker compose logs -f wireguard
+
+
+
+## Retrieve your client config
+### On your Pi:
+ls config/peer1/peer1.conf
+### to view:
+cat config/peer1/peer1.conf
+
+
+
+## Adding more peers
+To add a new peer later (e.g. “phone2”):
+docker compose exec wireguard /app/show-peer phone2 || \
+docker compose exec wireguard add-peer phone2
+# This will create config at ./config/phone2/phone2.conf
+
+
 Parameter 	Function
 -p 51820:51820/udp 	wireguard port
 -e PUID=1000 	for UserID - see below for explanation

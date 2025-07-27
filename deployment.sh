@@ -39,6 +39,10 @@ sudo chmod +x /usr/local/bin/docker-compose
 ########################################################################################
 # Set VPN server
 
+# To forward between internet interfaces (between eth0 and docker0)
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+
+
 mkdir Wireguard_VPN
 cd Wireguard_VPN
 
@@ -55,7 +59,7 @@ services:
       - PUID=1000        # your Pi user’s UID
       - PGID=1000        # your Pi user’s GID
       - TZ=Europe/Ljubljana
-      - SERVERURL=your.ddns.or.static.ip    # optional; e.g. vpn.example.com
+      - SERVERURL=auto    # optional; e.g. vpn.example.com
       - SERVERPORT=51820 # optional; default WireGuard port
       - PEERS=1          # optional; number of peer configs to generate
       - PEERDNS=auto     # optional; push host DNS to clients
@@ -71,5 +75,8 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
     restart: unless-stopped' > docker-compose.yml
+
+
+docker compose up -d
 
 
