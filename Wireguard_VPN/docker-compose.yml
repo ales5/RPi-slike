@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN        # manipulate networking
+      - SYS_MODULE       # optional; load kernel modules
+    environment:
+      - PUID=1000        # your Pi user’s UID
+      - PGID=1000        # your Pi user’s GID
+      - TZ=Europe/Ljubljana
+      - SERVERURL=your.ddns.or.static.ip    # optional; e.g. vpn.example.com
+      - SERVERPORT=51820 # optional; default WireGuard port
+      - PEERS=1          # optional; number of peer configs to generate
+      - PEERDNS=auto     # optional; push host DNS to clients
+      # - INTERNAL_SUBNET=10.13.13.0/24  # optional; custom subnet
+      # - ALLOWEDIPS=0.0.0.0/0          # optional; what clients are allowed to route
+      - PERSISTENTKEEPALIVE_PEERS= #optional
+      - LOG_CONFS=true #optional
+    volumes:
+      - ./config:/config
+      # - /lib/modules:/lib/modules:ro
+    ports:
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
