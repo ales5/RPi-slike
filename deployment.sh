@@ -1,9 +1,13 @@
 
+# Configure raspi-config -> enalbe ssh, connect to WiFi, locale,..
+
+
 # fstab configuration
-sudo mkdir -p /mnt/server_slike
+MOUNT_DIR ="/mnt/server_slike"
+sudo mkdir -p $MOUNT_DIR 
 UUID="XXXX-XXXX"
 #UUID=$(blkid -o value -s UUID $(lsblk -o NAME,FSTYPE -pn | grep ntfs | awk '{print $1}' | head -n 1))
-sudo sh -c "echo \"UUID=$UUID  /mnt/server_slike  ntfs  defaults,nofail,uid=1000,gid=1000,umask=000  0  2\" >> /etc/fstab"
+sudo sh -c "echo \"UUID=$UUID  $MOUNT_DIR  ntfs  defaults,nofail,uid=1000,gid=1000,umask=000  0  2\" >> /etc/fstab"
 sudo mount -a
 
 
@@ -51,8 +55,8 @@ sudo chmod +x /usr/local/bin/docker-compose
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
 
-mkdir Wireguard_VPN
-cd Wireguard_VPN
+mkdir ~/Wireguard_VPN
+cd ~/Wireguard_VPN
 
 echo 'version: "3.8"
 
@@ -89,10 +93,88 @@ docker compose up -d
 
 
 
+########################################################################################
+# Samba server
+SAMBA_SERVER_DIR="~/Samba_sever"
+CONTAINER_NAME=samba-server
+mkdir -p $SAMBA_SERVER_DIR
+cd $SAMBA_SERVER_DIR
+# 1. Create Dockerfile
+cat > Dockerfile <<'EOF'
+FROM debian:stable-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y samba samba-common-bin nano && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /data
+
+COPY smb.conf /etc/samba/smb.conf
+
+EXPOSE 137 138 139 445
+
+CMD ["/usr/sbin/smbd", "-FS", "--no-process-group"]
+EOF
+
+# 2. Create Samba configuration file
+cat > smb.conf <<'EOF'
+[global]
+   server string = Pi Samba Server
+   log file = /var/log/samba/log.%m
+   max log size = 50
+   map to guest = Bad User
+   usershare allow guests = yes
+   passdb backend = tdbsam
+
+[share]
+   path = /data
+   browsable = yes
+   read only = no
+   guest ok = no
+EOF
+
+# 3. Create Docker Compose file
+cat > docker-compose.yml <<EOF
+version: "3.9"
+
+services:
+  samba:
+    build: .
+    container_name: $CONTAINER_NAME
+    restart: unless-stopped
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - $MOUNT_POINT:/data
+EOF
+
+# 4. Build Docker image
+docker-compose build
+
+# 5. Start container
+docker-compose up -d
+
+# 6. Prompt for Samba username and password
+echo "Enter Samba username to create:"
+read -r SAMBA_USER
+echo "Enter Samba password:"
+read -rs SAMBA_PASS
+echo
+
+# 7. Create user inside container
+docker exec -it $CONTAINER_NAME bash -c "
+  adduser --disabled-password --gecos '' $SAMBA_USER && \
+  echo '$SAMBA_USER:$SAMBA_PASS' | chpasswd && \
+  smbpasswd -a -s $SAMBA_USER <<< \"$SAMBA_PASS\n$SAMBA_PASS\""
+
+echo "Samba container deployed! Share available at: \\\\<Pi-IP>\\share"
 
 
 
-
-
+########################################################################################
+# FTP server
 
 
