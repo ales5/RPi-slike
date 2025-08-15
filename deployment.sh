@@ -164,11 +164,21 @@ echo "Enter Samba password:"
 read -rs SAMBA_PASS
 echo
 
-# 7. Create user inside container
-docker exec -it $CONTAINER_NAME bash -c "
-  adduser --disabled-password --gecos '' $SAMBA_USER && \
-  echo '$SAMBA_USER:$SAMBA_PASS' | chpasswd && \
-  smbpasswd -a -s $SAMBA_USER <<< \"$SAMBA_PASS\n$SAMBA_PASS\""
+# 7. Create a Linux user inside the container
+docker exec -it "$CONTAINER_NAME" bash -c "
+  adduser --disabled-password --gecos '' $SAMBA_USER
+"
+
+# 8. Set the Linux user password
+docker exec -it "$CONTAINER_NAME" bash -c "
+  echo '$SAMBA_USER:$SAMBA_PASS' | chpasswd
+"
+
+# 9. Add the user to Samba's password database
+docker exec -it "$CONTAINER_NAME" bash -c "
+  smbpasswd -a -s $SAMBA_USER <<< \"$SAMBA_PASS
+$SAMBA_PASS\"
+"
 
 echo "Samba container deployed! Share available at: \\\\<Pi-IP>\\share"
 
