@@ -1,4 +1,12 @@
 
+# fstab configuration
+sudo mkdir -p /mnt/server_slike
+UUID="XXXX-XXXX"
+#UUID=$(blkid -o value -s UUID $(lsblk -o NAME,FSTYPE -pn | grep ntfs | awk '{print $1}' | head -n 1))
+sudo sh -c "echo \"UUID=$UUID  /mnt/server_slike  ntfs  defaults,nofail,uid=1000,gid=1000,umask=000  0  2\" >> /etc/fstab"
+sudo mount -a
+
+
 ########################################################################################
 # set static IP addresses via NetworkManager for Wifi in Eth interfaces
 
@@ -78,5 +86,13 @@ services:
 
 
 docker compose up -d
+
+
+
+
+
+
+
+
 
 
