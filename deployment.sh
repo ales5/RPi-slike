@@ -185,6 +185,111 @@ echo "Samba container deployed! Share available at: \\\\<Pi-IP>\\share"
 
 
 ########################################################################################
-# FTP server
+# FTPS server
+FTPS_SERVER_DIR="$HOME/FTPS_server"
+FTPS_CONTAINER_NAME="ftps-server"
+mkdir -p "$FTPS_SERVER_DIR"
+cd "$FTPS_SERVER_DIR"
+
+# 1. Create Dockerfile
+cat > Dockerfile <<'EOF'
+FROM debian:stable-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y vsftpd openssl && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /data /etc/ssl/private
+
+# Generate self-signed certificate (for testing; replace with real cert if needed)
+RUN openssl req -x509 -nodes -days 1095 -subj "/C=US/ST=State/L=City/O=Org/CN=localhost" \
+    -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key \
+    -out /etc/ssl/private/vsftpd.crt
+
+COPY vsftpd.conf /etc/vsftpd.conf
+
+EXPOSE 21 20 21100-21110
+
+CMD ["/usr/sbin/vsftpd", "/etc/vsftpd.conf"]
+EOF
+
+# 2. Create vsftpd configuration file
+cat > vsftpd.conf <<'EOF'
+listen=YES
+listen_ipv6=NO
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+chroot_local_user=YES
+allow_writeable_chroot=YES
+pasv_enable=YES
+pasv_min_port=21100
+pasv_max_port=21110
+ssl_enable=YES
+rsa_cert_file=/etc/ssl/private/vsftpd.crt
+rsa_private_key_file=/etc/ssl/private/vsftpd.key
+force_local_data_ssl=YES
+force_local_logins_ssl=YES
+ssl_ciphers=HIGH
+EOF
+
+# 3. Create Docker Compose file
+cat > docker-compose.yml <<EOF
+version: "3.9"
+
+services:
+  ftps:
+    build: .
+    container_name: $FTPS_CONTAINER_NAME
+    restart: unless-stopped
+    ports:
+      - "21:21"
+      - "20:20"
+      - "21100-21110:21100-21110"
+    volumes:
+      - $MOUNT_DIR:/data
+EOF
+
+# 4. Build Docker image
+docker-compose build
+
+# 5. Start container
+docker-compose up -d
+
+# 6. Prompt for FTPS username and password
+echo "Enter FTPS username to create:"
+read -r FTPS_USER
+echo "Enter FTPS password:"
+read -rs FTPS_PASS
+echo
+
+# 7. Create user inside container
+docker exec -it "$FTPS_CONTAINER_NAME" bash -c "
+  adduser --disabled-password --gecos '' $FTPS_USER && \
+  echo '$FTPS_USER:$FTPS_PASS' | chpasswd
+"
+
+echo "FTPS container deployed! Connect with:"
+echo "Host: <Pi-IP>, Port: 21, Username: $FTPS_USER, Password: [the one you entered], Protocol: FTPS (Explicit)"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
