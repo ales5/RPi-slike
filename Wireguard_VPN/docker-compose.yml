@@ -1,5 +1,6 @@
 version: "3.8"
 
+
 services:
   wireguard:
     image: lscr.io/linuxserver/wireguard:latest
@@ -11,9 +12,9 @@ services:
       - PUID=1000        # your Pi user’s UID
       - PGID=1000        # your Pi user’s GID
       - TZ=Europe/Ljubljana
-      - SERVERURL=auto    # optional; e.g. vpn.example.com
+      - SERVERURL=simdoma.ddns.net # auto    # optional; e.g. vpn.example.com
       - SERVERPORT=51820 # optional; default WireGuard port
-      - PEERS=1          # optional; number of peer configs to generate
+      - PEERS=12          # optional; number of peer configs to generate
       - PEERDNS=auto     # optional; push host DNS to clients
       # - INTERNAL_SUBNET=10.13.13.0/24  # optional; custom subnet
       # - ALLOWEDIPS=0.0.0.0/0          # optional; what clients are allowed to route

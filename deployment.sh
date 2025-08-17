@@ -55,6 +55,14 @@ sudo chmod +x /usr/local/bin/docker-compose
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
 
+sudo iptables -t nat -A POSTROUTING -s 10.13.13.0/24 -o wlan0 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s 10.13.13.0/24 -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i wg0 -j ACCEPT
+sudo iptables -A FORWARD -o wg0 -j ACCEPT
+sudo apt install iptables-persistent -y
+sudo netfilter-persistent save
+
+
 echo "Enter your No-IP hostname (e.g., mypi.ddns.net):"
 read -r NOIP_HOSTNAME
 
