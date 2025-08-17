@@ -1,7 +1,6 @@
 
 # Configure raspi-config -> enalbe ssh, connect to WiFi, locale,..
 
-
 # fstab configuration
 MOUNT_DIR ="/mnt/server_slike"
 sudo mkdir -p $MOUNT_DIR 
@@ -50,15 +49,21 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ########################################################################################
 # Set VPN server
+# WireGuard server with dynamic No-IP hostname
 
 # To forward between internet interfaces (between eth0 and docker0)
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
 
-mkdir ~/Wireguard_VPN
-cd ~/Wireguard_VPN
+echo "Enter your No-IP hostname (e.g., mypi.ddns.net):"
+read -r NOIP_HOSTNAME
 
-echo 'version: "3.8"
+mkdir -p "./Wireguard_VPN"
+cd "./Wireguard_VPN"
+
+cat > docker-compose.yml <<EOF
+version: "3.8"
+
 
 services:
   wireguard:
@@ -71,9 +76,9 @@ services:
       - PUID=1000        # your Pi user’s UID
       - PGID=1000        # your Pi user’s GID
       - TZ=Europe/Ljubljana
-      - SERVERURL=auto    # optional; e.g. vpn.example.com
+      - SERVERURL=$NOIP_HOSTNAME # auto    # optional; e.g. vpn.example.com
       - SERVERPORT=51820 # optional; default WireGuard port
-      - PEERS=1          # optional; number of peer configs to generate
+      - PEERS=12          # optional; number of peer configs to generate
       - PEERDNS=auto     # optional; push host DNS to clients
       # - INTERNAL_SUBNET=10.13.13.0/24  # optional; custom subnet
       # - ALLOWEDIPS=0.0.0.0/0          # optional; what clients are allowed to route
@@ -86,16 +91,18 @@ services:
       - 51820:51820/udp
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
-    restart: unless-stopped' > docker-compose.yml
-
+    restart: unless-stopped
+EOF
 
 docker compose up -d
+
+echo "WireGuard container deployed using No-IP hostname: $NOIP_HOSTNAME"
 
 
 
 ########################################################################################
 # Samba server
-SAMBA_SERVER_DIR="~/Samba_sever"
+SAMBA_SERVER_DIR="./Samba_sever"
 CONTAINER_NAME=samba-server
 mkdir -p $SAMBA_SERVER_DIR
 cd $SAMBA_SERVER_DIR
@@ -186,7 +193,7 @@ echo "Samba container deployed! Share available at: \\\\<Pi-IP>\\share"
 
 ########################################################################################
 # FTPS server
-FTPS_SERVER_DIR="$HOME/FTPS_server"
+FTPS_SERVER_DIR="./FTPS_server"
 FTPS_CONTAINER_NAME="ftps-server"
 mkdir -p "$FTPS_SERVER_DIR"
 cd "$FTPS_SERVER_DIR"
@@ -283,7 +290,7 @@ echo "Host: <Pi-IP>, Port: 21, Username: $FTPS_USER, Password: [the one you ente
 ########################################################################################
 # No-IP DUC client
 
-NOIP_DIR="$HOME/NoIP_DUC"
+NOIP_DIR="./NoIP_DUC"
 NOIP_CONTAINER_NAME="noip-duc"
 mkdir -p "$NOIP_DIR"
 cd "$NOIP_DIR"
