@@ -280,6 +280,51 @@ echo "Host: <Pi-IP>, Port: 21, Username: $FTPS_USER, Password: [the one you ente
 
 
 
+########################################################################################
+# No-IP DUC client
+
+NOIP_DIR="$HOME/NoIP_DUC"
+NOIP_CONTAINER_NAME="noip-duc"
+mkdir -p "$NOIP_DIR"
+cd "$NOIP_DIR"
+
+# Prompt for No-IP credentials and hostname
+echo "Enter your No-IP username/email:"
+read -r NOIP_USERNAME
+echo "Enter your No-IP password:"
+read -rs NOIP_PASSWORD
+echo
+echo "Enter your No-IP hostname(s) (comma-separated if multiple, e.g., mypi.ddns.net):"
+read -r NOIP_HOSTNAMES
+
+# Create env file
+cat > noip-duc.env <<EOF
+NOIP_USERNAME=$NOIP_USERNAME
+NOIP_PASSWORD=$NOIP_PASSWORD
+NOIP_HOSTNAMES=$NOIP_HOSTNAMES
+EOF
+
+# Create docker-compose.yml using official GitHub template
+cat > docker-compose.yml <<EOF
+services:
+  noip-duc:
+    container_name: $NOIP_CONTAINER_NAME
+    image: ghcr.io/noipcom/noip-duc:latest
+    env_file: noip-duc.env
+    restart: unless-stopped
+    networks:
+      - noip-duc
+
+networks:
+  noip-duc:
+    driver: bridge
+EOF
+
+# Start the container
+docker compose up -d
+
+echo "No-IP DUC container deployed and running. Check logs with:"
+echo "docker logs -f $NOIP_CONTAINER_NAME"
 
 
 
