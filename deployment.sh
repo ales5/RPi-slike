@@ -2,9 +2,9 @@
 # Configure raspi-config -> enalbe ssh, connect to WiFi, locale,..
 
 # fstab configuration
-MOUNT_DIR ="/mnt/server_slike"
+MOUNT_DIR="/mnt/server_slike"
 sudo mkdir -p $MOUNT_DIR 
-UUID="XXXX-XXXX"
+UUID="A00833A2083375FE"
 #UUID=$(blkid -o value -s UUID $(lsblk -o NAME,FSTYPE -pn | grep ntfs | awk '{print $1}' | head -n 1))
 sudo sh -c "echo \"UUID=$UUID  $MOUNT_DIR  ntfs  defaults,nofail,uid=1000,gid=1000,umask=000  0  2\" >> /etc/fstab"
 sudo mount -a
@@ -110,7 +110,7 @@ echo "WireGuard container deployed using No-IP hostname: $NOIP_HOSTNAME"
 
 ########################################################################################
 # Samba server
-SAMBA_SERVER_DIR="./Samba_sever"
+SAMBA_SERVER_DIR="Samba_sever"
 CONTAINER_NAME=samba-server
 mkdir -p $SAMBA_SERVER_DIR
 cd $SAMBA_SERVER_DIR
@@ -130,7 +130,8 @@ COPY smb.conf /etc/samba/smb.conf
 
 EXPOSE 137 138 139 445
 
-CMD ["/usr/sbin/smbd", "-FS", "--no-process-group"]
+CMD ["/usr/sbin/smbd", "-F", "--no-process-group"] 
+# -F: run in the foreground (so Docker can manage it)
 EOF
 
 # 2. Create Samba configuration file
@@ -163,14 +164,14 @@ services:
       - "139:139"
       - "445:445"
     volumes:
-      - $MOUNT_POINT:/data
+      - $MOUNT_DIR:/data
 EOF
 
 # 4. Build Docker image
-docker-compose build
+docker compose build
 
 # 5. Start container
-docker-compose up -d
+docker compose up -d
 
 # 6. Prompt for Samba username and password
 echo "Enter Samba username to create:"
@@ -180,14 +181,10 @@ read -rs SAMBA_PASS
 echo
 
 # 7. Create a Linux user inside the container
-docker exec -it "$CONTAINER_NAME" bash -c "
-  adduser --disabled-password --gecos '' $SAMBA_USER
-"
+docker exec -it "$CONTAINER_NAME" bash -c "adduser --disabled-password --gecos '' $SAMBA_USER"
 
 # 8. Set the Linux user password
-docker exec -it "$CONTAINER_NAME" bash -c "
-  echo '$SAMBA_USER:$SAMBA_PASS' | chpasswd
-"
+docker exec -it "$CONTAINER_NAME" bash -c "echo '$SAMBA_USER:$SAMBA_PASS' | chpasswd"
 
 # 9. Add the user to Samba's password database
 docker exec -it "$CONTAINER_NAME" bash -c "
@@ -201,7 +198,7 @@ echo "Samba container deployed! Share available at: \\\\<Pi-IP>\\share"
 
 ########################################################################################
 # FTPS server
-FTPS_SERVER_DIR="./FTPS_server"
+FTPS_SERVER_DIR="FTPS_server"
 FTPS_CONTAINER_NAME="ftps-server"
 mkdir -p "$FTPS_SERVER_DIR"
 cd "$FTPS_SERVER_DIR"
@@ -268,10 +265,10 @@ services:
 EOF
 
 # 4. Build Docker image
-docker-compose build
+docker compose build
 
 # 5. Start container
-docker-compose up -d
+docker compose up -d
 
 # 6. Prompt for FTPS username and password
 echo "Enter FTPS username to create:"
@@ -282,9 +279,10 @@ echo
 
 # 7. Create user inside container
 docker exec -it "$FTPS_CONTAINER_NAME" bash -c "
-  adduser --disabled-password --gecos '' $FTPS_USER && \
+  adduser --home /data --disabled-password --gecos '' $FTPS_USER && \
   echo '$FTPS_USER:$FTPS_PASS' | chpasswd
 "
+
 
 echo "FTPS container deployed! Connect with:"
 echo "Host: <Pi-IP>, Port: 21, Username: $FTPS_USER, Password: [the one you entered], Protocol: FTPS (Explicit)"

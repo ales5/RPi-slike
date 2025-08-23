@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  samba:
+    build: .
+    container_name: samba-server
+    restart: unless-stopped
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - /mnt/server_slike:/data

@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  ftps:
+    build: .
+    container_name: ftps-server
+    restart: unless-stopped
+    ports:
+      - "21:21"
+      - "20:20"
+      - "21100-21110:21100-21110"
+    volumes:
+      - /mnt/server_slike:/data
