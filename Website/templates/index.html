@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Viewer</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+      padding: 20px;
+    }
+    #main-menu button {
+      margin: 5px;
+      padding: 10px 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #main-menu button:hover {
+      background-color: #666;
+    }
+    #submenu-container button {
+      margin: 5px;
+      padding: 8px 15px;
+      background-color: #555;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #submenu-container button:hover {
+      background-color: #777;
+    }
+    #display-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+
+
+
+  </style>
+
+
+
+<!-- <style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: white;
+    padding: 20px;
+  }
+
+  /* Main Menu Styling */
+  #main-menu {
+    margin-bottom: 20px;
+  }
+
+  /* Menus Container Styling */
+  #menus-container {
+    display: flex;
+    gap: 20px; /* Space between menus */
+    margin-bottom: 20px;
+  }
+
+  .menu {
+    flex: 1; /* Allow each menu to take equal width */
+    min-width: 150px; /* Set minimum width */
+    max-width: 300px;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  li:hover {
+    background-color: #333;
+  }
+
+  /* Image Display Styling */
+  #display-container img {
+    max-width: 100%;
+    max-height: 500px;
+    margin-top: 20px;
+  }
+</style> -->
+
+
+
+    <!-- body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+      padding: 20px;
+    }
+    #menu-container ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #menu-container li {
+      padding: 5px;
+      cursor: pointer;
+    }
+    #menu-container li:hover {
+      background-color: #333;
+    }
+    #display-container img {
+      max-width: 100%;
+      max-height: 500px;
+      margin-top: 20px;
+    }
+    .mode-selector {
+      margin: 20px 0;
+    } -->
+
+</head>
+<body>
+    <!-- Main Menu -->
+    <div id="main-menu">
+        <!-- <label><input type="radio" name="mode" value="manual" id="manual-mode"> Manual Pick</label>
+        <label><input type="radio" name="mode" value="random" id="random-mode"> Random</label>
+        <label><input type="radio" name="mode" value="strategic" id="strategic-mode" checked> Strategic</label> -->
+
+        <button id="manual-mode">Manual Pick</button>
+        <button id="random-mode">Random</button>
+        <button id="strategic-mode">Sequential</button>
+
+      </div>
+
+      <div id="submenu-container"></div>
+    
+      <!-- Menus Container -->
+      <div id="menus-container">
+        <div id="years-menu" class="menu"></div>
+        <div id="events-menu" class="menu"></div>
+        <div id="photos-menu" class="menu"></div>
+      </div>
+    
+      <!-- Display Container -->
+      <div id="display-container"></div>
+    
+  <!-- JavaScript -->
+  <script src="/static/javascript.js"></script>
+</body>
+</html>

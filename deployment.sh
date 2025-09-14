@@ -342,8 +342,17 @@ echo "docker logs -f $NOIP_CONTAINER_NAME"
 
 
 
+########################################################################################
+# Install GUI
+sudo apt install raspberrypi-ui-mods
+sudo apt install xinit
+startx
 
 
+########################################################################################
+# Install firefox
+sudo apt install firefox-esr
+firefox
 
 
 
